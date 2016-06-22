@@ -89,7 +89,7 @@ def create_index(index, clientdir=DEFAULT_CLIENTDIR):
 
 
 @die_on_error
-def upload_package(path, clientdir=DEFAULT_CLIENTDIR):
+def upload_package(path, clientdir=DEFAULT_CLIENTDIR, files=None):
     """
     Upload the package residing at ``path`` to the currently selected devpi
     server + index.
@@ -99,9 +99,11 @@ def upload_package(path, clientdir=DEFAULT_CLIENTDIR):
     :param str clientdir: Path to a directory for the devpi CLI to store state.
     :rtype: subprocess.CompletedProcess
     """
-    cmd = subprocess.Popen([
-        'devpi', 'upload', '--clientdir', clientdir,
-        '--from-dir', '--no-vcs'], cwd=path)
+    cmd = ['devpi', 'upload', '--clientdir',
+           clientdir, '--from-dir', '--no-vcs']
+    if files:
+        cmd.extend(files)
+    cmd = subprocess.Popen(cmd, cwd=path)
     cmd.wait()
     return cmd
 
@@ -143,7 +145,7 @@ def main():
     select_server(vargs['server'])
     login(vargs['username'], vargs['password'])
     select_index(vargs['index'])
-    upload_package(payload['workspace']['path'])
+    upload_package(payload['workspace']['path'], files=vargs.get('files'))
 
 if __name__ == "__main__":
     main()
