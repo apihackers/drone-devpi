@@ -4,8 +4,11 @@ Everything needed to publish Python modules to a DevPi server.
 
 Recommended reading: http://doc.devpi.net/latest/quickstart-releaseprocess.html
 """
+import os
 import sys
 import urllib.parse
+
+from glob import glob
 
 import drone
 import subprocess
@@ -102,10 +105,24 @@ def upload_package(path, clientdir=DEFAULT_CLIENTDIR, files=None):
     cmd = ['devpi', 'upload', '--clientdir',
            clientdir, '--from-dir', '--no-vcs']
     if files:
-        cmd.extend(files)
+        cmd.extend(expand_files(path, files))
     cmd = subprocess.Popen(cmd, cwd=path)
     cmd.wait()
     return cmd
+
+
+def expand_files(path, patterns):
+    """
+    Expand files patterns into filenames
+    """
+    files = []
+    if isinstance(patterns, str):
+        patterns = [patterns]
+    for pattern in patterns:
+        pattern = os.path.join(path, pattern)
+        for filename in glob(pattern):
+            files.append(filename)
+    return files
 
 
 def check_vargs(vargs):
